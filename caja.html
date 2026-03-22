@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caja Registradora de Mamá</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 15px; background: #f4f4f9; }
+        .contenedor { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h2 { color: #d32f2f; margin-bottom: 5px; }
+        .estado { font-size: 0.8rem; color: #666; margin-bottom: 15px; height: 15px; }
+        
+        button { width: 100%; padding: 18px; margin: 6px 0; font-size: 1.1rem; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.96); }
+        
+        .btn-sencilla { background: #ffeb3b; }
+        .btn-empanada { background: #fb8c00; color: white; }
+        .btn-mantequilla { background: #fff176; }
+        .btn-queso { background: #fbc02d; border: 2px solid #f9a825; }
+        
+        .total-box { background: #e8f5e9; padding: 15px; border-radius: 12px; margin: 20px 0; border: 2px solid #4caf50; }
+        .total-monto { font-size: 2.5rem; color: #2e7d32; font-weight: bold; display: block; }
+        
+        .btn-reset { background: #f44336; color: white; font-size: 0.9rem; padding: 10px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <h2>Registradora 🫓</h2>
+    <div id="status" class="estado">Lista para vender</div>
+    
+    <button class="btn-sencilla" onclick="vender(1000, 'Arepa Sencilla')">Sencilla - $1.000</button>
+    <button class="btn-empanada" onclick="vender(2000, 'Empanada')">Empanada - $2.000</button>
+    <button class="btn-mantequilla" onclick="vender(2000, 'Arepa Mantequilla')">Mantequilla - $2.000</button>
+    <button class="btn-queso" onclick="vender(4000, 'Arepa Queso')">Con Queso - $4.000</button>
+
+    <div class="total-box">
+        <small>TOTAL EN CAJA (HOY)</small>
+        <span class="total-monto">$<span id="monto">0</span></span>
+    </div>
+    
+    <button class="btn-reset" onclick="borrarCaja()">Cerrar Caja (Cero)</button>
+</div>
+
+<script>
+    // --- PEGA TU URL DE GOOGLE AQUÍ ABAJO ---
+    const MI_URL_GOOGLE = "https://script.google.com/macros/s/AKfycbwidC0YRE5G9vwJwLuLTcSNu_mU2P5yiUr0sbhDGtPt49KboQvTqWDVth7hiRHX2q1v/exec"; 
+    // ----------------------------------------
+
+    let total = parseInt(localStorage.getItem('ventasArepas')) || 0;
+    actualizarPantalla();
+
+    function vender(precio, producto) {
+        total += precio;
+        localStorage.setItem('ventasArepas', total);
+        actualizarPantalla();
+        
+        document.getElementById('status').innerText = "Guardando en la nube...";
+
+        // Enviar datos al Excel
+        fetch(MI_URL_GOOGLE, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ producto: producto, precio: precio })
+        }).then(() => {
+            document.getElementById('status').innerText = "Venta guardada ✅";
+            setTimeout(() => document.getElementById('status').innerText = "", 2000);
+        });
+    }
+
+    function actualizarPantalla() {
+        document.getElementById('monto').innerText = total.toLocaleString('es-CO');
+    }
+
+    function borrarCaja() {
+        if(confirm("¿Reiniciar la caja a $0? El Excel guardará todo lo anterior.")) {
+            total = 0;
+            localStorage.removeItem('ventasArepas');
+            actualizarPantalla();
+        }
+    }
+</script>
+
+</body>
+</html>
